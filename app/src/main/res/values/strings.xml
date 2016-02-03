@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">permission-micro</string>
+    <string name="action_settings">Settings</string>
+    <string name="message_permission_granted">You can start record</string>
+    <string name="message_start_record">Start recording...</string>
+    <string name="message_stop_record">Stop recording</string>
+    <string name="message_access_recorder_authorized">allowed to make recordings</string>
+    <string name="message_access_recorder_denied">allowed to make recordings</string>
+    <string name="message_permission_denied">You have turned off permissions needed to work with recorder. Go to settings -> apps -> permission-micro -> Permissions to grant access to these permissions [ record, External storage]</string>
+</resources>
