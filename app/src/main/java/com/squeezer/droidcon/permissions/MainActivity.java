@@ -1,4 +1,4 @@
-package com.squeezer.android.permission_micro;
+package com.squeezer.droidcon.permissions;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -15,34 +15,31 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squeezer.android.permission_micro.eventbus.MyEvents;
-import com.squeezer.android.permission_micro.eventbus.MyEvents.PlayerEvent;
-import com.squeezer.android.permission_micro.eventbus.PlayerService;
-import com.squeezer.android.permission_micro.storage.ExternalStorage;
+import com.squeezer.droidcon.permissions.eventbus.MyEvents;
+import com.squeezer.droidcon.permissions.eventbus.MyEvents.PlayerEvent;
+import com.squeezer.droidcon.permissions.eventbus.PlayerService;
 
-import java.io.File;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.greenrobot.event.EventBus;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback,
-        View.OnClickListener{
-
-
-    boolean APP_EXIT_FLAG = false;
+        View.OnClickListener {
 
     private static final int REQUEST_APP_SETTINGS = 168;
 
@@ -60,22 +57,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private boolean isRec = false;
 
     private MediaRecorder myRecorder;
-    private String outputFile = null;
     private ImageButton mBtnStart;
     private ImageButton mPauseButton;
     private Button mBtnOpenSettings;
 
-
     private ImageButton mPlayButton;
     private ImageButton mStopButton;
 
-
     private PlayerEvent mPlayerService;
-
-
-    private int mCurrentApiVersion;
-
-    TextView mMyText;
+    private TextView mMyText;
 
     private static final String[] requiredPermissions = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -96,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         initViews();
 
 
-
         //initRecorder();
         initServicePlayer();
 
@@ -108,12 +97,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         if (hasPermissions(requiredPermissions)) {
             recorderStarted();
-            //showMessage(getResources().getString(R.string.message_access_recorder_authorized));
             initRecorder();
         } else {
-            recorderDenied();
-            //showMessage(getResources().getString(R.string.message_access_recorder_denied));
-
+            //Ask for permission: Type 1
+            checkPermissions();
+            //Ask for permission: type 2
+            //recorderDenied();
         }
     }
 
@@ -191,10 +180,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
 
-
-
     private void initRecorder() {
-        outputFile = Environment.getExternalStorageDirectory().
+        String outputFile = Environment.getExternalStorageDirectory().
                 getAbsolutePath() + "/" + pathFileRecorder;
 
         myRecorder = new MediaRecorder();
@@ -205,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         myRecorder.setOutputFile(outputFile);
 
     }
-
 
 
     @Override
@@ -222,11 +208,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-    /**********************************************************************
-     *
-     */
 
     @Override
     public void onClick(View v) {
@@ -250,19 +231,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 break;
         }
 
-        Log.e(TAG, "[Player] => " +
-                "" + mPlayerService.getStatus());
-
     }
 
     private void playPlayer() {
 
 
+        mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_START);
 
-            mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_START);
-
-            mPlayButton.setEnabled(false);
-            mStopButton.setEnabled(true);
+        mPlayButton.setEnabled(false);
+        mStopButton.setEnabled(true);
 
         EventBus.getDefault().post(mPlayerService);
     }
@@ -273,10 +250,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void PausePlayer() {
 
-            mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_PAUSE);
+        mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_PAUSE);
 
-            mPlayButton.setEnabled(true);
-            mStopButton.setEnabled(false);
+        mPlayButton.setEnabled(true);
+        mStopButton.setEnabled(false);
 
         EventBus.getDefault().post(mPlayerService);
 
@@ -284,10 +261,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void stopPlayer() {
 
-            mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_STOP);
+        mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_STOP);
 
-            mPlayButton.setEnabled(true);
-            mStopButton.setEnabled(false);
+        mPlayButton.setEnabled(true);
+        mStopButton.setEnabled(false);
 
         EventBus.getDefault().post(mPlayerService);
     }
@@ -298,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void recorder() {
 
-        if (isRec == true) {
+        if (isRec) {
             isRec = false;
             mPlayButton.setEnabled(true);
             mPauseButton.setEnabled(true);
@@ -315,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         try {
             myRecorder.stop();
             myRecorder.release();
-            myRecorder  = null;
+            myRecorder = null;
 
             mMyText.setText(getResources().getString(R.string.message_stop_record));
 
@@ -333,15 +310,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     }
 
-    public void startRecord(){
-
+    public void startRecord() {
 
         try {
-
             initRecorder();
             myRecorder.prepare();
             myRecorder.start();
-            mMyText.setText("Recording...");
+            mMyText.setText(R.string.message_start_record);
         } catch (IllegalStateException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -371,6 +346,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 String message = "You need to grant access to " + permissionsNeeded.get(0);
                 for (int i = 1; i < permissionsNeeded.size(); i++)
                     message = message + ", " + permissionsNeeded.get(i);
+
                 showMessageOKCancel(message,
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -392,14 +368,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     public boolean hasPermissions(@NonNull String... permissions) {
         for (String permission : permissions)
-            if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(MainActivity.this,permission))
+            if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(MainActivity.this, permission))
                 return false;
         return true;
     }
 
 
-
-    private void showMessage(String message){
+    private void showMessage(String message) {
 
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
@@ -420,11 +395,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
         new AlertDialog.Builder(MainActivity.this)
                 .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                .setPositiveButton(android.R.string.ok, okListener)
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        finish();
+                        recorderDenied();
                     }
                 })
                 .create()
@@ -434,8 +409,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS:
-            {
+            case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
                 Map<String, Integer> perms = new HashMap<String, Integer>();
                 // Initial
                 perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
@@ -450,7 +424,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     recorderStarted();
                 } else {
                     recorderDenied();
-//
                 }
             }
             break;
@@ -459,7 +432,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
     }
 
-
     private void goToSettings() {
         Intent myAppSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
         myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
@@ -467,11 +439,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         startActivityForResult(myAppSettings, REQUEST_APP_SETTINGS);
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        Log.e(TAG,"On result, "+requestCode+"," +resultCode);
+        Log.e(TAG, "On result, " + requestCode + "," + resultCode);
         if (resultCode == REQUEST_APP_SETTINGS) {
 
             if (hasPermissions(requiredPermissions)) {
@@ -481,17 +452,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             } else {
                 recorderDenied();
                 showMessage(getResources().getString(R.string.message_access_recorder_denied));
-
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-
-    /****************************************************************************************************
-     *
-     */
-
+    @Subscribe
     public void onEvent(MyEvents.UpdateTitleEvent event) {
 
         showMessage(event.getTitle());
@@ -509,12 +475,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             case PlayerService.MEDIA_PLAYER_CONTROL_STOP:
                 stopPerformed();
                 break;
-
         }
-
-        //showMessage(event.getTitle());
-
-
     }
 
     private void updatePlayButton() {
@@ -528,20 +489,4 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private void stopPerformed() {
         //mPlayButton.setBackgroundResource(R.drawable.play_pause_on);
     }
-
-
-    private void showRootFiles() {
-
-        Map<String, File> map= ExternalStorage.getFileRoot();
-        //File root = Environment.getExternalStorageDirectory();
-        Log.e("adnen", "key = " + map.keySet().toArray()[0]);
-        Log.e("adnen", "value = " + map.get(map.keySet().toArray()[0]));
-        File root = map.get(map.keySet().toArray()[0]);
-        ExternalStorage.getFilesName(root);
-        File rootChild = ExternalStorage.findFile(root, "squeezerRecording.3gpp");
-        Log.e("adnen", "rootChild = " + rootChild);
-    }
-
-
-
 }

@@ -1,4 +1,4 @@
-package com.squeezer.android.permission_micro;
+package com.squeezer.droidcon.permissions;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

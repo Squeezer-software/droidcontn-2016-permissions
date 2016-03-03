@@ -1,4 +1,4 @@
-package com.squeezer.android.permission_micro.eventbus;
+package com.squeezer.droidcon.permissions.eventbus;
 
 /**
  * Created by adnen on 1/11/16.
@@ -10,27 +10,25 @@ import android.media.MediaPlayer;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.squeezer.droidcon.permissions.MainActivity;
+import com.squeezer.droidcon.permissions.eventbus.MyEvents.PlayerEvent;
+import com.squeezer.droidcon.permissions.eventbus.MyEvents.UpdateTitleEvent;
 
-import com.squeezer.android.permission_micro.MainActivity;
-import com.squeezer.android.permission_micro.eventbus.MyEvents.PlayerEvent;
-import com.squeezer.android.permission_micro.eventbus.MyEvents.UpdateTitleEvent;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.greenrobot.event.EventBus;
 
 public class PlayerService extends Service {
     static final String TAG = "PlayerService";
 
-    public static final String MEDIA_PLAYER_STARTED_KEY = "started";
-
     private MediaPlayer mMediaPlayer;
 
-    UpdateTitleEvent mUpdateTitleEvent;
+    private UpdateTitleEvent mUpdateTitleEvent;
 
 
     public static final int MEDIA_PLAYER_SERVICE_STARTED = 10;
@@ -38,10 +36,6 @@ public class PlayerService extends Service {
     public static final int MEDIA_PLAYER_CONTROL_PAUSE = 22;
     public static final int MEDIA_PLAYER_CONTROL_STOP = 23;
     public static final int MEDIA_PLAYER_CONTROL_STOP_RECORD = 24;
-
-    public static final int MEDIA_PLAYER_SERVICE_CLIENT_UNBOUND = 30;
-
-
 
     @Override
     public void onCreate() {
@@ -76,9 +70,9 @@ public class PlayerService extends Service {
             e.printStackTrace();
         }
 
-
     }
 
+    @Subscribe
     public void onEvent(PlayerEvent event) {
         Log.i(TAG, "===============> onEventClick <===============");
         String message = "";
@@ -130,7 +124,6 @@ public class PlayerService extends Service {
 
     }
 
-
     @Override
     public IBinder onBind(Intent arg0) {
         // TODO Auto-generated method stub
@@ -151,10 +144,5 @@ public class PlayerService extends Service {
         mMediaPlayer.pause();
         mMediaPlayer.seekTo(0);
     }
-
-
-
-
-
 
 }

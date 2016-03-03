@@ -1,4 +1,4 @@
-package com.squeezer.android.permission_micro.eventbus;
+package com.squeezer.droidcon.permissions.eventbus;
 
 /**
  * Created by adnen on 1/18/16.

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.squeezer.android.permission_micro">
+    package="com.squeezer.droidcon.permissions">
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
@@ -13,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="com.squeezer.droidcon.permissions.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -24,7 +23,7 @@
         </activity>
 
         <service
-            android:name="com.squeezer.android.permission_micro.eventbus.PlayerService"
+            android:name="com.squeezer.droidcon.permissions.eventbus.PlayerService"
             android:enabled="true"
             android:exported="true">
         </service>
