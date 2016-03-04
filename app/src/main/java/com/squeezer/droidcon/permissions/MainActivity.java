@@ -45,13 +45,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private View mLayout;
 
-
     private LinearLayout mTopLayout;
     private LinearLayout buttonsLayout;
 
-
     private static final String TAG = "recorder_micro";
-    final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
+    private final int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
 
     //
     private boolean isRec = false;
@@ -80,15 +78,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //showRootFiles();
-
         initViews();
-
-
-        //initRecorder();
         initServicePlayer();
-
     }
 
     @Override
@@ -109,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private void initServicePlayer() {
 
         mPlayerService = new PlayerEvent();
-        Intent serviceIntent = new Intent(this,
+        Intent serviceIntent = new Intent(getApplicationContext(),
                 PlayerService.class);
         startService(serviceIntent);
 
@@ -128,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         mBtnOpenSettings = (Button) findViewById(R.id.button_setting);
         mBtnOpenSettings.setOnClickListener(this);
 
-
         mMyText.setVisibility(View.INVISIBLE);
         mBtnStart.setVisibility(View.INVISIBLE);
         mBtnOpenSettings.setVisibility(View.INVISIBLE);
@@ -145,14 +135,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         mTopLayout = (LinearLayout) findViewById(R.id.top_layout);
         buttonsLayout = (LinearLayout) findViewById(R.id.buttons_layout);
 
-
         mMyText.setVisibility(View.INVISIBLE);
         mMyText.setVisibility(View.INVISIBLE);
         mBtnStart.setVisibility(View.INVISIBLE);
         mBtnOpenSettings.setVisibility(View.GONE);
         buttonsLayout.setVisibility(View.GONE);
         mLayout.setBackgroundResource(R.color.colorPrimaryDark);
-
     }
 
     private void recorderStarted() {
@@ -192,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         myRecorder.setOutputFile(outputFile);
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -234,44 +221,25 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     private void playPlayer() {
-
-
         mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_START);
-
         mPlayButton.setEnabled(false);
         mStopButton.setEnabled(true);
-
         EventBus.getDefault().post(mPlayerService);
     }
 
-    /*********************************************************************
-     *
-     */
-
     private void PausePlayer() {
-
         mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_PAUSE);
-
         mPlayButton.setEnabled(true);
         mStopButton.setEnabled(false);
-
         EventBus.getDefault().post(mPlayerService);
-
     }
 
     private void stopPlayer() {
-
         mPlayerService.setStatus(PlayerService.MEDIA_PLAYER_CONTROL_STOP);
-
         mPlayButton.setEnabled(true);
         mStopButton.setEnabled(false);
-
         EventBus.getDefault().post(mPlayerService);
     }
-
-    /*********************************************************************
-     *
-     */
 
     private void recorder() {
 
@@ -327,10 +295,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     }
 
-    /*********************************************************************************
-     *
-     *********************************************************************************/
-
     private void checkPermissions() {
         List<String> permissionsNeeded = new ArrayList<String>();
 
@@ -351,49 +315,48 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]),
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        permissionsList.toArray(new String[permissionsList.size()]),
                                         REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
                             }
                         });
                 return;
             }
-            ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]),
+            ActivityCompat.requestPermissions(this, permissionsList.toArray(
+                            new String[permissionsList.size()]),
                     REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
             return;
         }
-
         recorderStarted();
     }
 
-
     public boolean hasPermissions(@NonNull String... permissions) {
         for (String permission : permissions)
-            if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(MainActivity.this, permission))
+            if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(
+                    getApplicationContext(), permission))
                 return false;
         return true;
     }
 
-
-    private void showMessage(String message) {
-
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-
-    }
-
-
     private boolean addPermission(List<String> permissionsList, String permission) {
-        if (ActivityCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), permission) !=
+                PackageManager.PERMISSION_GRANTED) {
             permissionsList.add(permission);
             // Check for Rationale Option
-            if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission))
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permission))
                 return false;
         }
         return true;
     }
 
+    private void showMessage(String message) {
+
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
+    }
 
     private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(MainActivity.this)
+        new AlertDialog.Builder(this)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.ok, okListener)
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -407,19 +370,23 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
                 Map<String, Integer> perms = new HashMap<String, Integer>();
                 // Initial
-                perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        PackageManager.PERMISSION_GRANTED);
                 perms.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_GRANTED);
                 // Fill with results
                 for (int i = 0; i < permissions.length; i++)
                     perms.put(permissions[i], grantResults[i]);
                 // Check for ACCESS_FINE_LOCATION
-                if (perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                        && perms.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                if (perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_GRANTED
+                        && perms.get(Manifest.permission.RECORD_AUDIO) ==
+                        PackageManager.PERMISSION_GRANTED) {
                     // All Permissions Granted
                     recorderStarted();
                 } else {
