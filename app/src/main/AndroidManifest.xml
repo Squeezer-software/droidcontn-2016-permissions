@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.squeezer.droidcon.permissions">
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -25,9 +26,7 @@
         <service
             android:name="com.squeezer.droidcon.permissions.eventbus.PlayerService"
             android:enabled="true"
-            android:exported="true">
-        </service>
-...
+            android:exported="true" />
     </application>
 
 </manifest>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
@@ -85,15 +86,18 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (hasPermissions(requiredPermissions)) {
-            recorderStarted();
-            initRecorder();
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+            if (hasPermissions(requiredPermissions)) {
+                recorderStarted();
+                initRecorder();
+            } else {
+                //Ask for permission: Type 1
+                checkPermissions();
+                //Ask for permission: type 2
+                //recorderDenied();
+            }
         } else {
-            //Ask for permission: Type 1
-            checkPermissions();
-            //Ask for permission: type 2
-            //recorderDenied();
+            initRecorder();
         }
     }
 
